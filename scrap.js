@@ -1,6 +1,7 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 const express = require('express');
+const fs = require('fs');
 
 const app = express();
 
@@ -11,14 +12,54 @@ const endURL = ',a132.html';
 const materials = [];
 const products = [];
 
-const scrapeData = (url, category, indexPage = 0) => {
-    return new Promise((resolve, reject) => {
-        axios(url)
-            .then(async (res) => {
+const saveArrToJSON = (fileName, arr)=>{
+    const jsonData = JSON.stringify(arr, null, 2);
+
+    fs.writeFile(fileName, jsonData, 'utf-8', (err)=>{
+        if(err){
+            console.error('Wystąpił błąd podczas zapisywania pliku :(', err);
+            return;
+        }
+        console.log('Plik JSON został pomyślnie utworzony i zapisany :D');
+    })
+}
+
+const scrapeData = async (url, category) => {
+    try {
+        const res = await axios.get(url);
+        const html = res.data;
+        const $ = cheerio.load(html);
+
+        $('.ProductBlockWrapper_wrapper__BMppI').each(function () {
+            const title = $(this).find('.ProductBlockName_link__fYuf1').text();
+            const price = $(this).find('.ProductPrice_price__0Enwf').text();
+            const url = $(this).find('.ProductBlockImage_wrapper__GbhBq').attr('href');
+
+            products.push({
+                category,
+                title,
+                price,
+                path: url
+            });
+        });
+
+        let nextPageURL = url.slice(0, -5);
+
+        let indexPage = 2;
+
+        let newUrl = `${nextPageURL},strona-${indexPage}.html`;
+        while (true) {
+            try {
+                const res = await axios.get(newUrl);
                 const html = res.data;
                 const $ = cheerio.load(html);
+                const productCount = $('.ProductBlockWrapper_wrapper__BMppI').length;
 
-                $('.ProductBlockWrapper_wrapper__BMppI').each(async function () {
+                if (productCount === 0) {
+                    break;
+                }
+
+                $('.ProductBlockWrapper_wrapper__BMppI').each(function () {
                     const title = $(this).find('.ProductBlockName_link__fYuf1').text();
                     const price = $(this).find('.ProductPrice_price__0Enwf').text();
                     const url = $(this).find('.ProductBlockImage_wrapper__GbhBq').attr('href');
@@ -31,39 +72,18 @@ const scrapeData = (url, category, indexPage = 0) => {
                     });
                 });
 
-                const nextPageURL = url.slice(0, -5);
-                indexPage = 1;
-
-                try {
-                    let newUrl = `${nextPageURL},strona-${indexPage}.html`
-                    indexPage++;
-                    axios(newUrl)
-                        .then(async (res) => {
-                            const html = res.data;
-                            const $ = cheerio.load(html);
-                            $('.ProductBlockWrapper_wrapper__BMppI').each(async function () {
-                                const title = $(this).find('.ProductBlockName_link__fYuf1').text();
-                                const price = $(this).find('.ProductPrice_price__0Enwf').text();
-                                const url = $(this).find('.ProductBlockImage_wrapper__GbhBq').attr('href');
-
-                                products.push({
-                                    category,
-                                    title,
-                                    price,
-                                    path: url
-                                });
-                            });
-                        });
-                    console.log(indexPage);
-                } catch (error) {
-                    console.log(error);
-                }
-                resolve(products.length);
-            })
-            .catch((err) => {
-                reject(err);
-            });
-    });
+                indexPage++;
+                newUrl = `${nextPageURL},strona-${indexPage}.html`;
+            } catch (error) {
+                console.log(error);
+                break;
+            }
+        }
+        saveArrToJSON('produkty.json',products);
+        return products;
+    } catch (error) {
+        throw error;
+    }
 };
 
 const scrapePage = async () => {
@@ -82,15 +102,19 @@ const scrapePage = async () => {
         });
 
         for (const item of materials) {
-            const products = await scrapeData(basicURL + item.url, item.title);
-            console.log(products);
+            const count = await scrapeData(basicURL + item.url, item.title);
+            console.log(count);
         }
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.log(error);
     }
 };
 
 scrapePage();
+
+
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
