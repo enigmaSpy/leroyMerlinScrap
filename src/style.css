@@ -1,0 +1,30 @@
+#products{
+    display: flex;
+    flex-wrap: wrap;
+    
+   
+}
+.product__item{
+    flex: 1 ;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #8a8989;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+.products__category{
+    background-color: aliceblue;
+    font-size: 10px;
+    font-weight: 700;
+    color: #3e3e3e;
+}
+.products__title{
+
+}
+.products__price{
+
+}
+.products__img{
+    display: block;
+}
