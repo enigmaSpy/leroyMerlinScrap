@@ -1,30 +1,67 @@
-#products{
+.products{
     display: flex;
+    gap: 12px;
     flex-wrap: wrap;
-    
-   
+    font-family: 'Courier New', Courier, monospace;
 }
 .product__item{
     flex: 1 ;
     margin: 10px;
-    padding: 10px;
     border: 1px solid #8a8989;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     transition: 0.3s;
+    text-decoration: none;
+    transition: translate 0.3s ease-in-out, box-shadow 0.2s ease-in-out, border 0.8s ease-in-out;
+    
+}
+.product__item:hover{
+    box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    translate: 0 -5px;
+    border-color: #383838;
+}
+
+.product__item:hover .products__img{
+   scale:1.1;
+}
+.product__item:hover .products__category{
+    background-color: #383838;
+    color: aliceblue;
 }
 .products__category{
-    background-color: aliceblue;
+    background-color: rgba(125, 126, 126, 0.652);
+    border-radius: 2px;
     font-size: 10px;
     font-weight: 700;
     color: #3e3e3e;
+    display: block;
+    width: 100%;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
 }
 .products__title{
-
+    font-size: 14px;
+    font-weight: 700;
+    color: #3e3e3e;
+    padding: 10px;
 }
 .products__price{
-
+    font-size: 21px;
+    font-weight: 700;
+    color: #3e3e3e;
+    padding: 0 10px;
+    text-align: right;
+    margin: 0;
+}
+.products__imgWrapper{
+    width: 276px;
+    height: 276px;
+    padding: 10px;
+    margin: auto;
+    overflow: hidden;
 }
 .products__img{
     display: block;
+    margin: auto;
+    transition: scale 0.3s ease-in-out;
 }
